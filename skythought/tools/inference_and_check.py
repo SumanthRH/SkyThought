@@ -10,6 +10,8 @@ from openai import OpenAI
 import concurrent.futures
 from functools import partial
 import ray 
+from ray.util.placement_group import placement_group
+from ray.util.scheduling_strategies import PlacementGroupSchedulingStrategy
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -371,6 +373,6 @@ if __name__ == "__main__":
     
     ray.init()
 
-    ray.get(ray_main.options(num_gpus=args.tp, resources={"anyscale/accelerator_shape:8xL40S": 0.001}).remote())
+    ray.get(ray_main.options(num_gpus=args.tp, resources={"accelerator_type:L40S": 0.001}).remote())
 
 
