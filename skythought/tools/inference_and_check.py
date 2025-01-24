@@ -9,6 +9,7 @@ from util.model_utils import *
 from openai import OpenAI
 import concurrent.futures
 from functools import partial
+import ray 
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -361,5 +362,14 @@ def main():
     system_prompt = SYSTEM_PROMPT[args.model]
     perform_inference_and_check(handler, temperatures, max_tokens, result_file, llm, system_prompt, args)
 
-if __name__ == "__main__":
+
+@ray.remote
+def ray_main():
     main()
+
+if __name__ == "__main__":
+    ray.init()
+
+    ray.get(ray_main.options(resources={"GPU": 8, "anyscale/accelerator_shape:8xA10G": 0.001}).remote())
+
+
