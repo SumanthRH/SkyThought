@@ -1,7 +1,11 @@
-vllm==0.6.2
+vllm==0.7.0
 pyext
 word2number
 scipy
 datasets
 latex2sympy2
+<<<<<<< HEAD
 pyyaml==6.0.2
+=======
+pydantic
+>>>>>>> eab138ae1f7490ccb725615a4277327e9fac5850
