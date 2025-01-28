@@ -1,3 +1,5 @@
+from typing import Optional
+
 from skythought_evals.util.math_parsing_util import (
     get_multiple_choice_answer,
     mmlu_pro_extract_answer,
@@ -42,7 +44,7 @@ class MMLUTaskHandler(TaskHandler):
         options_str = options_str[:-1]  # remove the last space
         return f"Answer Choices: {options_str}"
 
-    def make_conversations(self, data, system_prompt, model=None):
+    def make_conversations(self, data, system_prompt: Optional[str] = None):
         conversations = []
         for problem in data:
             multiple_choice_string = self.get_multiple_choice_answers(problem)

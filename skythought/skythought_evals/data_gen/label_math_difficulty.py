@@ -9,7 +9,7 @@ from itertools import cycle
 
 import openai
 from datasets import load_dataset
-from skythought_evals.util.prompts import aops_criteria, grading_prompt
+from skythought_evals.data_gen.prompts import aops_criteria, grading_prompt
 from tqdm import tqdm
 
 

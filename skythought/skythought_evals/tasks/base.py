@@ -1,5 +1,6 @@
 import json
 import os
+from abc import abstractmethod, ABC
 from typing import Any, Dict, List, Optional
 
 import yaml
@@ -35,6 +36,7 @@ class TaskConfig(BaseModel):
         return cls(**config_dict)
 
 
+@ABC
 class TaskHandler:
 
     def __init__(self, task_config: TaskConfig):
@@ -48,14 +50,17 @@ class TaskHandler:
     @property
     def question_key(self):
         return self.task_config.question_key
-
+    
+    @abstractmethod
     def check_correctness(self, problem, generation):
         raise NotImplementedError("Subclasses should implement this method.")
 
+    @abstractmethod
     def update_results(self, problem, response):
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def make_conversations(self, data, system_prompt, model=None):
+    @abstractmethod
+    def make_conversations(self, data, system_prompt: Optional[str] = None):
         raise NotImplementedError("Subclasses should implement this method.")
 
     def load_existing_results(self, result_file):
@@ -65,7 +70,7 @@ class TaskHandler:
             records = json.load(f)
         return records
 
-    def load_dataset(self, source=None, split=None, **kwargs) -> HFDataset:
+    def load_dataset(self, source=None, split=None) -> HFDataset:
         dataset = load_dataset(
             path=self.task_config.dataset_path,
             name=source if source else self.task_config.dataset_source,
@@ -74,10 +79,29 @@ class TaskHandler:
         )
         return dataset
 
+    @staticmethod
+    def format_into_conversation(contents: List[str], system_prompt: Optional[str] =None) -> List[Dict[str, str]]: 
+        """Formats a list of message contents and an optional system prompt in the OpenAI conversational format
+        
+        Assumes that `contents` has a list of alternating user and assistant messages (i.e u/a/u/a....)
+        """
+        conversation = []
+        if system_prompt:
+            conversation.append({"role": "system", "content": system_prompt})
+        
+        for i, content in enumerate(contents): 
+            if i% 2 == 0: 
+                conversation.append({"role": "user", "content": content})
+            else: 
+                conversation.append({"role": "assistant", "content": content})
+        return conversation
+
+    @abstractmethod
     def load_and_filter_dataset(
-        self, start, end, split="train", source=None, filter_difficulty=None, args=None
+        self, start, end, split=None, source=None, filter_difficulty=None, args=None
     ):
         raise NotImplementedError("Subclasses should implement this method.")
 
+    @abstractmethod
     def process_remaining_data(self, train_data, results):
         raise NotImplementedError("Subclasses should implement this method.")

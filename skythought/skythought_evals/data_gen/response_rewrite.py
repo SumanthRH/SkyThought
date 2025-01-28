@@ -4,7 +4,7 @@ import os
 import random
 
 from skythought_evals.util.math_parsing_util import strip_answer_string
-from skythought_evals.util.model_utils import (
+from skythought_evals.data_gen.prompts import (
     SUBPROBLEM_SPLIT_PROMPT,
     SUBSOLUTION_EXTRACTION_PROMPT,
     SYSTEM_PROMPT,
@@ -449,7 +449,7 @@ def main():
     final_dataset = compute_token_usages(
         variants_dataset, ["fcs", "fcs_plus1", "fcs_reflection"], llm
     )
-
+    # TODO (sumanthrh): fix this stuff
     system_prompt = SYSTEM_PROMPT[args.target_model]
 
     # Generate conversation format for each variant, which can be used in SimPO/DPO/etc.
