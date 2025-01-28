@@ -1,6 +1,6 @@
 import json
 import os
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 import yaml
@@ -50,7 +50,7 @@ class TaskHandler:
     @property
     def question_key(self):
         return self.task_config.question_key
-    
+
     @abstractmethod
     def check_correctness(self, problem, generation):
         raise NotImplementedError("Subclasses should implement this method.")
@@ -80,19 +80,21 @@ class TaskHandler:
         return dataset
 
     @staticmethod
-    def format_into_conversation(contents: List[str], system_prompt: Optional[str] =None) -> List[Dict[str, str]]: 
+    def format_into_conversation(
+        contents: List[str], system_prompt: Optional[str] = None
+    ) -> List[Dict[str, str]]:
         """Formats a list of message contents and an optional system prompt in the OpenAI conversational format
-        
+
         Assumes that `contents` has a list of alternating user and assistant messages (i.e u/a/u/a....)
         """
         conversation = []
         if system_prompt:
             conversation.append({"role": "system", "content": system_prompt})
-        
-        for i, content in enumerate(contents): 
-            if i% 2 == 0: 
+
+        for i, content in enumerate(contents):
+            if i % 2 == 0:
                 conversation.append({"role": "user", "content": content})
-            else: 
+            else:
                 conversation.append({"role": "assistant", "content": content})
         return conversation
 

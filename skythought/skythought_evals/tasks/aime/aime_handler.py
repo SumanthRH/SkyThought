@@ -1,20 +1,22 @@
 from typing import Dict, List, Optional
 
-from skythought_evals.util.model_utils import MODEL_TO_NAME
-
 from ..math.math_handler import MathTaskHandler
 
 
 class AIMETaskHandler(MathTaskHandler):
     def generate_prompt(self, problem: Dict):
-        return self.task_config.templating_parameters["template"].format(prompt=problem[self.question_key])
+        return self.task_config.templating_parameters["template"].format(
+            prompt=problem[self.question_key]
+        )
 
     def make_conversations(self, data, system_prompt: Optional[str] = None):
         conversations: List[List[Dict[str, str]]] = []
         for problem in data:
             prompt_text = self.generate_prompt(problem)
             conversations.append(
-                self.format_into_conversation(contents=[prompt_text], system_prompt=system_prompt)
+                self.format_into_conversation(
+                    contents=[prompt_text], system_prompt=system_prompt
+                )
             )
         return conversations
 

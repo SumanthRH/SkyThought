@@ -92,7 +92,9 @@ class APPSTaskHandler(TaskHandler):
                 test_case, problem["question"], starter_code
             )
             conversations.append(
-                self.format_into_conversation(contents=[prompt_text], system_prompt=system_prompt)
+                self.format_into_conversation(
+                    contents=[prompt_text], system_prompt=system_prompt
+                )
             )
         return conversations
 

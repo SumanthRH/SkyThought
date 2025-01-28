@@ -1,6 +1,6 @@
+from typing import Optional
 
 from datasets import load_dataset
-from typing import Optional
 from skythought_evals.util.common import TimeoutException, timeout
 from skythought_evals.util.math_parsing_util import (
     extract_answer,
