@@ -1,9 +1,9 @@
 import random
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from skythought_evals.util.math_parsing_util import get_multiple_choice_answer
 
-from ..base import TaskHandler
+from ..base import MessagesType, TaskHandler
 
 
 class GPQADiamondTaskHandler(TaskHandler):
@@ -64,8 +64,10 @@ class GPQADiamondTaskHandler(TaskHandler):
 
         return multiple_choice_string, correct_answer_letter
 
-    def make_conversations(self, data, system_prompt: Optional[str] = None):
-        conversations = []
+    def make_conversations(
+        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+    ) -> List[MessagesType]:
+        conversations: List[MessagesType] = []
         for problem in data:
             (
                 multiple_choice_string,

@@ -1,9 +1,9 @@
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from skythought_evals.util.math_parsing_util import extract_answer
 
-from ..base import TaskConfig, TaskHandler
+from ..base import MessagesType, TaskConfig, TaskHandler
 
 
 class ARCChallengeTaskHandler(TaskHandler):
@@ -56,8 +56,10 @@ class ARCChallengeTaskHandler(TaskHandler):
 
         return response_entry
 
-    def make_conversations(self, data, system_prompt: Optional[str] = None):
-        conversations = []
+    def make_conversations(
+        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+    ) -> List[MessagesType]:
+        conversations: List[MessagesType] = []
         for problem in data:
             prompt_text = self.generate_prompt(problem)
             conversations.append(

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from skythought_evals.util.math_parsing_util import (
     extract_answer,
@@ -6,7 +6,7 @@ from skythought_evals.util.math_parsing_util import (
     strip_answer_string,
 )
 
-from ..base import TaskHandler
+from ..base import MessagesType, TaskHandler
 
 
 class MathTaskHandler(TaskHandler):
@@ -38,8 +38,10 @@ class MathTaskHandler(TaskHandler):
 
         return response_entry
 
-    def make_conversations(self, data, system_prompt: Optional[str] = None):
-        conversations = []
+    def make_conversations(
+        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+    ) -> List[MessagesType]:
+        conversations: List[MessagesType] = []
         for problem in data:
             prompt_text = self.generate_prompt(problem)
             conversations.append(

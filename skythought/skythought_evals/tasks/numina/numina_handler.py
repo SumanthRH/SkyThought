@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from datasets import load_dataset
 from skythought_evals.util.common import TimeoutException, timeout
@@ -8,7 +8,7 @@ from skythought_evals.util.math_parsing_util import (
     strip_answer_string,
 )
 
-from ..base import TaskHandler
+from ..base import MessagesType, TaskHandler
 
 
 class NUMINATaskHandler(TaskHandler):
@@ -61,8 +61,10 @@ class NUMINATaskHandler(TaskHandler):
             diff_dict[example["problem"]] = example["gpt_difficulty_parsed"]
         return diff_dict
 
-    def make_conversations(self, data, system_prompt: Optional[str] = None):
-        conversations = []
+    def make_conversations(
+        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+    ) -> List[MessagesType]:
+        conversations: List[MessagesType] = []
         for problem in data:
             prompt_text = self.generate_prompt(problem["problem"])
             conversations.append(

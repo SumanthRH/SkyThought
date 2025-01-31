@@ -8,6 +8,8 @@ from datasets import Dataset as HFDataset
 from datasets import load_dataset
 from pydantic import BaseModel, Field
 
+MessagesType = List[Dict[str, str]]
+
 
 class PreprocessConfig(BaseModel):
     difficulty: str
@@ -44,6 +46,14 @@ class TaskHandler:
 
     @classmethod
     def from_config_path(cls, config_path: str) -> "TaskHandler":
+        """Instantiates a TaskHandler from a config file path
+
+        Args:
+            config_path (str): Path to the config file
+
+        Returns:
+            TaskHandler: The instantiated TaskHandler
+        """
         task_config = TaskConfig.from_yaml(config_path)
         return cls(task_config)
 
@@ -52,7 +62,16 @@ class TaskHandler:
         return self.task_config.question_key
 
     @abstractmethod
-    def check_correctness(self, problem, generation):
+    def check_correctness(self, problem: str, generation: str) -> bool:
+        """Checks the correctness of a generation for a given problem
+
+        Args:
+            problem (str): The problem to check
+            generation (str): The generation to check
+
+        Returns:
+            bool: Whether the generation is correct
+        """
         raise NotImplementedError("Subclasses should implement this method.")
 
     @abstractmethod

@@ -1,12 +1,12 @@
 import json
 import multiprocessing
 from multiprocessing import Manager
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 from skythought_evals.util.common import has_code
 
-from ..base import TaskHandler
+from ..base import MessagesType, TaskHandler
 from .taco_util import run_test as taco_run_test
 
 
@@ -81,8 +81,10 @@ class TACOTaskHandler(TaskHandler):
 
         return response_entry
 
-    def make_conversations(self, data, system_prompt: Optional[str] = None):
-        conversations = []
+    def make_conversations(
+        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+    ) -> List[MessagesType]:
+        conversations: List[MessagesType] = []
         for _, problem in enumerate(data):
             starter_code = (
                 None if len(problem["starter_code"]) == 0 else problem["starter_code"]
