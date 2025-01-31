@@ -1,16 +1,20 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 
+from ..base import ModelConfig
 from ..math.math_handler import MathTaskHandler
+from ..task_util import register_handler
 
 
+@register_handler("aime")
 class AIMETaskHandler(MathTaskHandler):
     def generate_prompt(self, problem: Dict):
         return self.task_config.templating_parameters["template"].format(
             prompt=problem[self.question_key]
         )
 
-    def make_conversations(self, data, system_prompt: Optional[str] = None):
+    def make_conversations(self, data, model_config: ModelConfig):
         conversations: List[List[Dict[str, str]]] = []
+        system_prompt = model_config.system_prompt
         for problem in data:
             prompt_text = self.generate_prompt(problem)
             conversations.append(

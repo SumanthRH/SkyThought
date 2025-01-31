@@ -1,10 +1,11 @@
 import copy
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from datasets import Dataset as HFDataset
 from skythought_evals.util.common import has_code
 
-from ..base import MessagesType, TaskHandler
+from ..base import MessagesType, ModelConfig, TaskHandler
+from ..task_util import register_handler
 from .livecodebench_util import (
     map_to_example,
     post_process_code,
@@ -13,6 +14,7 @@ from .livecodebench_util import (
 )
 
 
+@register_handler("livecodebench")
 class LiveCodeBenchTaskHandler(TaskHandler):
 
     def generate_prompt(self, problem):
@@ -86,17 +88,21 @@ class LiveCodeBenchTaskHandler(TaskHandler):
         return response_entry
 
     def make_conversations(
-        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+        self, data: List[Dict[str, Any]], model_config: ModelConfig
     ) -> List[MessagesType]:
         conversations: List[MessagesType] = []
+        system_prompt = model_config.system_prompt
         for problem in data:
             prompt_text = self.generate_prompt(problem)
-            conversations.append(
+            conversation = (
                 [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt_text},
                 ]
+                if system_prompt
+                else [{"role": "user", "content": prompt_text}]
             )
+            conversations.append(conversation)
         return conversations
 
     def load_and_filter_dataset(

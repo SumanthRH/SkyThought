@@ -8,14 +8,16 @@ from datasets import Dataset as HFDataset
 from datasets import load_dataset
 from pydantic import BaseModel, Field
 
+from ..models import ModelConfig
+
 MessagesType = List[Dict[str, str]]
 
 
-class PreprocessConfig(BaseModel):
+class PreprocessConfig(BaseModel, extra="allow"):
     difficulty: str
 
 
-class TaskConfig(BaseModel):
+class TaskConfig(BaseModel, extra="forbid"):
     handler: str
     dataset_path: str
     dataset_source: Optional[str] = None
@@ -38,8 +40,7 @@ class TaskConfig(BaseModel):
         return cls(**config_dict)
 
 
-@ABC
-class TaskHandler:
+class TaskHandler(ABC):
 
     def __init__(self, task_config: TaskConfig):
         self.task_config = task_config
@@ -79,7 +80,7 @@ class TaskHandler:
         raise NotImplementedError("Subclasses should implement this method.")
 
     @abstractmethod
-    def make_conversations(self, data, system_prompt: Optional[str] = None):
+    def make_conversations(self, data, model_config: ModelConfig):
         raise NotImplementedError("Subclasses should implement this method.")
 
     def load_existing_results(self, result_file):

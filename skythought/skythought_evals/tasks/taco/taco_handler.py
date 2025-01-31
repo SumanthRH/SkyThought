@@ -1,15 +1,17 @@
 import json
 import multiprocessing
 from multiprocessing import Manager
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 from skythought_evals.util.common import has_code
 
-from ..base import MessagesType, TaskHandler
+from ..base import MessagesType, ModelConfig, TaskHandler
+from ..task_util import register_handler
 from .taco_util import run_test as taco_run_test
 
 
+@register_handler("taco")
 class TACOTaskHandler(TaskHandler):
 
     def generate_prompt(self, prompt, starter_code=None, fn_name=None):
@@ -82,9 +84,10 @@ class TACOTaskHandler(TaskHandler):
         return response_entry
 
     def make_conversations(
-        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+        self, data: List[Dict[str, Any]], model_config: ModelConfig
     ) -> List[MessagesType]:
         conversations: List[MessagesType] = []
+        system_prompt = model_config.system_prompt
         for _, problem in enumerate(data):
             starter_code = (
                 None if len(problem["starter_code"]) == 0 else problem["starter_code"]
@@ -101,12 +104,10 @@ class TACOTaskHandler(TaskHandler):
             prompt_text = self.generate_prompt(
                 problem["question"], starter_code, fn_name
             )
-            conversations.append(
-                [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt_text},
-                ]
+            conversation = self.format_into_conversation(
+                contents=[prompt_text], system_prompt=system_prompt
             )
+            conversations.append(conversation)
         return conversations
 
     def load_and_filter_dataset(

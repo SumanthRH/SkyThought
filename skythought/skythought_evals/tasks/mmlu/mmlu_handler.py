@@ -51,12 +51,10 @@ class MMLUTaskHandler(TaskHandler):
             prompt_text = self.generate_prompt(
                 problem["question"] + "\n" + multiple_choice_string
             )
-            conversations.append(
-                [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt_text},
-                ]
+            conversation = self.format_into_conversation(
+                contents=[prompt_text], system_prompt=system_prompt
             )
+            conversations.append(conversation)
         return conversations
 
     def process_remaining_data(self, train_data, results):

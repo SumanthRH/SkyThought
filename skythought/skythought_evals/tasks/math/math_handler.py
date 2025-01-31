@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from skythought_evals.util.math_parsing_util import (
     extract_answer,
@@ -6,9 +6,11 @@ from skythought_evals.util.math_parsing_util import (
     strip_answer_string,
 )
 
-from ..base import MessagesType, TaskHandler
+from ..base import MessagesType, ModelConfig, TaskHandler
+from ..task_util import register_handler
 
 
+@register_handler("math500")
 class MathTaskHandler(TaskHandler):
     def generate_prompt(self, problem):
         return self.task_config.templating_parameters["template"].format(**problem)
@@ -39,17 +41,16 @@ class MathTaskHandler(TaskHandler):
         return response_entry
 
     def make_conversations(
-        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+        self, data: List[Dict[str, Any]], model_config: ModelConfig
     ) -> List[MessagesType]:
         conversations: List[MessagesType] = []
+        system_prompt = model_config.system_prompt
         for problem in data:
             prompt_text = self.generate_prompt(problem)
-            conversations.append(
-                [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt_text},
-                ]
+            conversation = self.format_into_conversation(
+                contents=[prompt_text], system_prompt=system_prompt
             )
+            conversations.append(conversation)
         return conversations
 
     def process_remaining_data(self, train_data, results):

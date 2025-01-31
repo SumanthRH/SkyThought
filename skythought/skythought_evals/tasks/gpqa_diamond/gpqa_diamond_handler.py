@@ -1,11 +1,13 @@
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from skythought_evals.util.math_parsing_util import get_multiple_choice_answer
 
-from ..base import MessagesType, TaskHandler
+from ..base import MessagesType, ModelConfig, TaskHandler
+from ..task_util import register_handler
 
 
+@register_handler("gpqa_diamond")
 class GPQADiamondTaskHandler(TaskHandler):
 
     def generate_prompt(self, problem):
@@ -65,9 +67,10 @@ class GPQADiamondTaskHandler(TaskHandler):
         return multiple_choice_string, correct_answer_letter
 
     def make_conversations(
-        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+        self, data: List[Dict[str, Any]], model_config: ModelConfig
     ) -> List[MessagesType]:
         conversations: List[MessagesType] = []
+        system_prompt = model_config.system_prompt
         for problem in data:
             (
                 multiple_choice_string,
@@ -76,12 +79,15 @@ class GPQADiamondTaskHandler(TaskHandler):
             problem["Answer"] = correct_answer_letter
             problem["prompt"] = problem["Question"] + "\n" + multiple_choice_string
             prompt_text = self.generate_prompt(problem)
-            conversations.append(
+            conversation = (
                 [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt_text},
                 ]
+                if system_prompt
+                else [{"role": "user", "content": prompt_text}]
             )
+            conversations.append(conversation)
         return conversations
 
     def load_and_filter_dataset(

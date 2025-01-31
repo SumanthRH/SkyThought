@@ -1,11 +1,13 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from skythought_evals.util.math_parsing_util import extract_answer
 
-from ..base import MessagesType, TaskConfig, TaskHandler
+from ..base import MessagesType, ModelConfig, TaskConfig, TaskHandler
+from ..task_util import register_handler
 
 
+@register_handler("gsm8k")
 class GSM8KTaskHandler(TaskHandler):
     def __init__(self, task_config: TaskConfig) -> None:
         super().__init__(task_config)
@@ -42,17 +44,21 @@ class GSM8KTaskHandler(TaskHandler):
         return response_entry
 
     def make_conversations(
-        self, data: List[Dict[str, Any]], system_prompt: Optional[str] = None
+        self, data: List[Dict[str, Any]], model_config: ModelConfig
     ) -> List[MessagesType]:
         conversations: List[MessagesType] = []
+        system_prompt = model_config.system_prompt
         for problem in data:
             prompt_text = self.generate_prompt(problem)
-            conversations.append(
+            conversation = (
                 [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt_text},
                 ]
+                if system_prompt
+                else [{"role": "user", "content": prompt_text}]
             )
+            conversations.append(conversation)
         return conversations
 
     def load_and_filter_dataset(

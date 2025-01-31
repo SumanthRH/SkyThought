@@ -1,9 +1,13 @@
+import warnings
 from pathlib import Path
 from typing import Optional, Union
 
+import yaml
 from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
 
-CONFIG_FILE = Path(__file__).parent / "model_configs.yaml"
+CONFIG_FILE_PATH = Path(__file__).parent / "model_configs.yaml"
+# cache the configs in a global var
+ALL_CONFIGS = None
 
 
 class StringInFile(BaseModel):
@@ -12,7 +16,7 @@ class StringInFile(BaseModel):
 
     @model_validator(mode="after")
     def validate_and_extract_string(self):
-        full_path = Path(CONFIG_FILE).parent / self.path
+        full_path = Path(CONFIG_FILE_PATH).parent / self.path
         if full_path.exists():
             with open(full_path, "r") as f:
                 self._string = f.read()
@@ -25,11 +29,16 @@ class StringInFile(BaseModel):
         return self._string
 
 
+def read_yaml(path: str):
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
+
+
 class ModelConfig(BaseModel):
     model_id: str
-    name: Union[str, StringInFile] = Field(default="")
-    system_prompt: Optional[str] = None
-    user_template: Optional[str] = None
+    name: str = Field(default="")
+    system_prompt: Optional[Union[str, StringInFile]] = None
+    user_template: Optional[Union[str, StringInFile]] = None
 
     @field_validator("name", mode="before")
     def validate_name(cls, v):
@@ -37,12 +46,19 @@ class ModelConfig(BaseModel):
             return cls.model_id.split("/")[-1]
         return v
 
-    @field_validator("system_prompt", mode="before")
-    def validate_system_prompt(cls, v):
-        if v is None:
-            return v
-
-
-if __name__ == "__main__":
-    s = StringInFile(path="prime.txt")
-    breakpoint()
+    @classmethod
+    def from_model_id(cls, model_id: str):
+        global ALL_CONFIGS
+        if ALL_CONFIGS is None:
+            ALL_CONFIGS = read_yaml(CONFIG_FILE_PATH)
+        if model_id in ALL_CONFIGS:
+            init_kwargs = ALL_CONFIGS[model_id]
+            init_kwargs["model_id"] = model_id
+        else:
+            init_kwargs = {}
+            init_kwargs["model_id"] = model_id
+            warnings.warn(
+                f"Model {model_id} not found in {CONFIG_FILE_PATH}. Initializing without any system prompt.",
+                stacklevel=2,
+            )
+        return cls(**init_kwargs)
