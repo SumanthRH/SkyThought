@@ -40,7 +40,8 @@ class ModelConfig(BaseModel):
     # can be a string or a path to a file with the string
     system_prompt: Optional[Union[str, StringInFile]] = None
     user_template: Optional[Union[str, StringInFile]] = None
-
+    assistant_prefill: Optional[str] = None 
+    
     @field_validator("name", mode="before")
     def validate_name(cls, v):
         if v is None:

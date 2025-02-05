@@ -16,6 +16,7 @@ from skythought_evals.tasks import (
     TaskHandler,
 )
 from skythought_evals.util.common import set_seed
+from skythought_evals.util.budget_forcing import get_responses
 from tqdm import tqdm
 from vllm import LLM, SamplingParams
 
@@ -89,9 +90,10 @@ def perform_inference_and_check(
 
         else:
             sampling_params = SamplingParams(max_tokens=max_tokens, temperature=temp)
-            responses = llm.chat(
-                messages=conversations, sampling_params=sampling_params, use_tqdm=True
-            )
+            # responses = llm.chat(
+            #     messages=conversations, sampling_params=sampling_params, use_tqdm=True
+            # )
+            responses = get_responses(conversations, llm, max_tokens, temp, args)
 
         total_correct = 0
         total_finish = 0
@@ -106,7 +108,7 @@ def perform_inference_and_check(
                 if args.model.startswith("openai"):
                     response_str = response.choices[0].message.content.strip()
                 else:
-                    response_str = response.outputs[0].text.strip()
+                    response_str = response.outputs[0].text.strip() if not args.budget_forcing else response.strip()
                 future_to_task[
                     executor.submit(
                         handler.update_results, remaining_data[idx], response_str
@@ -511,6 +513,7 @@ def main():
         "--n", type=int, default=1, help="Number of samples generated per problem."
     )
     parser.add_argument("--seed", type=int, default=41, help="Random seed.")
+    parser.add_argument("--budget-forcing", action="store_true", help="Budget forcing at generation time.")
 
     args = parser.parse_args()
     set_seed(args.seed)
